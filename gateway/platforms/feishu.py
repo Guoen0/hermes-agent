@@ -2598,6 +2598,10 @@ class FeishuAdapter(BasePlatformAdapter):
 
         operator = getattr(event, "operator", None)
         open_id = str(getattr(operator, "open_id", "") or "")
+        allowed_ids = set(self._admins) | set(self._allowed_group_users)
+        if allowed_ids and "*" not in allowed_ids and open_id not in allowed_ids:
+            logger.warning("[Feishu] Unauthorized approval click by %s", open_id or "<unknown>")
+            return P2CardActionTriggerResponse() if P2CardActionTriggerResponse else None
         sender_id = SimpleNamespace(open_id=open_id, user_id=str(getattr(operator, "user_id", "") or ""))
         if not self._allow_group_message(sender_id, state.get("chat_id", ""), is_bot=False):
             logger.warning("[Feishu] Unauthorized approval click by %s", open_id or "<unknown>")
@@ -2658,6 +2662,10 @@ class FeishuAdapter(BasePlatformAdapter):
 
         operator = getattr(event, "operator", None)
         open_id = str(getattr(operator, "open_id", "") or "")
+        allowed_ids = set(self._admins) | set(self._allowed_group_users)
+        if not allowed_ids or ("*" not in allowed_ids and open_id not in allowed_ids):
+            logger.warning("[Feishu] Unauthorized update prompt click by %s", open_id or "<unknown>")
+            return P2CardActionTriggerResponse() if P2CardActionTriggerResponse else None
         sender_id = SimpleNamespace(open_id=open_id, user_id=str(getattr(operator, "user_id", "") or ""))
         if not self._allow_group_message(sender_id, state.get("chat_id", ""), is_bot=False):
             logger.warning("[Feishu] Unauthorized update prompt click by %s", open_id or "<unknown>")

@@ -17744,11 +17744,11 @@ class GatewayRunner(GatewayAuthorizationMixin, GatewayKanbanWatchersMixin, Gatew
                     _now = time.monotonic()
                     _remaining = _PROGRESS_EDIT_INTERVAL - (_now - _last_edit_ts)
                     if _remaining > 0:
-                        # Wait out the throttle interval, then loop back to
-                        # drain any additional queued messages before sending
-                        # a single batched edit.
+                        # Wait out the throttle interval, then flush the
+                        # accumulated text. Returning to the queue here can
+                        # strand the final tool update when no later event
+                        # arrives to trigger another edit.
                         await asyncio.sleep(_remaining)
-                        continue
 
                     if not _run_still_current():
                         return
